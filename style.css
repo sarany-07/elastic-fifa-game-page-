@@ -967,6 +967,13 @@ body.is-mobile #game-canvas {
   transform: scale(0.98);
 }
 
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+
 /* ---- FIFA Ultimate Team style cards ---- */
 
 .fut-card {

@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 const TOTAL_SHOTS = 5;
+const PLAY_LIMIT = 10;
 const SHOT_DURATION_MS = 680;
 const RESULT_PAUSE_MS = 1200;
 const COUNTDOWN_START = 3;
@@ -1632,10 +1633,17 @@ class UI {
 
     this.finalScoreEl.textContent = String(score);
     this._showRewardCard(score);
+    this.restartBtn.disabled = false;
+    this.restartBtn.textContent = "Play Again";
 
     if (score >= 280) {
       setTimeout(() => this._launchConfetti(), 400);
     }
+  }
+
+  setPlayLimitReached() {
+    this.restartBtn.disabled = true;
+    this.restartBtn.textContent = "Play Limit Reached";
   }
 
   hideGameOver() {
@@ -1992,6 +2000,9 @@ class Game {
     this.ui.showGameOver(this.score, this.matchStats, () =>
       this.audio.playCrowdCheer()
     );
+    if (this.videoCount + 1 >= PLAY_LIMIT) {
+      this.ui.setPlayLimitReached();
+    }
   }
 
   async _saveScore() {
@@ -2030,6 +2041,11 @@ class Game {
   }
 
   _startVideoBreak() {
+    if (this.videoCount + 1 >= PLAY_LIMIT) {
+      this.ui.setPlayLimitReached();
+      return;
+    }
+
     if (this.videoCount === 0) {
       this.ui.showFormBreak();
       return;
@@ -2040,6 +2056,10 @@ class Game {
 
   continueGame(force = false) {
     if (!force && this.ui.continueBtn.disabled) return;
+    if (this.videoCount + 1 >= PLAY_LIMIT) {
+      this.ui.setPlayLimitReached();
+      return;
+    }
     this.ui.continueBtn.disabled = true;
     this.videoCount++;
     this.audio._ensureContext();
