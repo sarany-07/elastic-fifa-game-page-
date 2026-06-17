@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#2c6cb0">
+  <link rel="icon" href="https://marketingcampaign.online/Elastic/FIFA_Assessment_Landing_Page/V3/images/favicon.ico" type="image/x-icon">
+  <title>Penalty Shootout</title>
+  <link rel="stylesheet" href="style.css?v=7">
+</head>
+<body>
+  <div id="game-wrapper">
+    <div id="signup-modal" class="signup-overlay" role="dialog" aria-modal="true" aria-labelledby="signup-title">
+      <form id="signup-form" class="signup-card">
+        <h1 id="signup-title">Sign up</h1>
+
+        <label class="signup-field">
+          <span>Sign your squad sheet (Name)</span>
+          <input id="player-name" name="name" type="text" autocomplete="name" minlength="2" required>
+        </label>
+
+        <label class="signup-field">
+          <span>Company email</span>
+          <input id="player-email" name="email" type="email" autocomplete="email" required>
+        </label>
+
+        <label class="signup-field">
+          <span>The name fans will chant (Gamertag)</span>
+          <input id="player-username" name="username" type="text" autocomplete="username" minlength="3" required>
+        </label>
+
+        <button type="submit" class="signup-submit" aria-label="Start game">
+          <span id="signup-button-animation" class="signup-button-animation" aria-hidden="true"></span>
+          <span class="signup-button-fallback">Start</span>
+        </button>
+      </form>
+    </div>
+
+    <div id="game-stage">
+      <canvas id="game-canvas" aria-label="Penalty shootout game"></canvas>
+
+      <div id="ui-overlay">
+        <div id="score-card" class="ui-panel" aria-live="polite">
+          <div id="score-title">SCORE</div>
+          <div id="score-display">0 - 0</div>
+        </div>
+
+        <div id="prompt" class="ui-panel hidden">
+          <span id="prompt-text">Press SPACE to Shoot</span>
+        </div>
+
+        <div id="shot-feedback" class="ui-panel hidden"></div>
+
+        <div id="chances" aria-label="Remaining shots"></div>
+
+        <div id="countdown" class="ui-panel hidden">
+          <span id="countdown-num">3</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobile-bar" class="mobile-bar hidden" aria-hidden="true">
+      <p id="mobile-hint" class="mobile-hint">Touch the goal to aim</p>
+      <button id="shoot-btn" type="button" class="shoot-btn" aria-label="Shoot the ball">
+        SHOOT
+      </button>
+    </div>
+
+    <div id="rotate-notice" class="rotate-notice hidden" role="dialog" aria-labelledby="rotate-title">
+      <div class="rotate-notice__card">
+        <div class="rotate-notice__icon" aria-hidden="true"></div>
+        <h2 id="rotate-title">Rotate your phone</h2>
+        <p>Penalty Shootout is landscape only.<br>Turn your device sideways to play.</p>
+      </div>
+    </div>
+
+    <div id="game-over" class="modal hidden" role="dialog" aria-labelledby="go-title">
+      <div id="confetti-layer" class="confetti-layer" aria-hidden="true"></div>
+
+      <div id="results-panel" class="results-modal results-modal--compact" role="document" aria-labelledby="go-title">
+        <p class="results-points" id="go-title">
+          <span class="results-score" id="final-score">0</span>
+          <span class="results-score-unit">Points</span>
+        </p>
+
+        <div id="featured-card-slot" class="featured-card-slot" aria-label="Your player card"></div>
+
+        <button id="restart-btn" type="button" class="btn btn-primary">Play Again</button>
+        <button id="dashboard-btn" type="button" class="btn btn-secondary">View the Dashboard</button>
+      </div>
+
+      <div id="video-break" class="video-break hidden" role="document" aria-labelledby="video-break-title">
+        <h2 id="video-break-title">Watch to keep playing</h2>
+
+        <div class="video-frame">
+          <iframe
+            id="reward-video"
+            title="Reward video"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <p id="video-countdown" class="video-countdown" aria-live="polite">
+          Play Now unlocks in <strong>5</strong>s
+        </p>
+
+        <button id="continue-btn" type="button" class="btn btn-primary hidden">
+          Play Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/lottie.min.js" defer></script>
+  <script src="game.js?v=34" defer></script>
+</body>
+</html>
