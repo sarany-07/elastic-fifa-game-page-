@@ -17,6 +17,8 @@ const SCORE_API_URL =
 const DASHBOARD_URL =
   "https://marketingcampaign.online/Elastic/FIFA_Assessment_Landing_Page/V4/#gameSection";
 const PLAY_AGAIN_FORM_URL = "https://events.elastic.co/aroundtheworld";
+const REWARD_VIDEO_URL =
+  "https://play.vidyard.com/wiV2167hapKXXRxXrqvYci.html?autoplay=1&embed_button=0&viral_sharing=0";
 
 /** Medium difficulty — reads aim well, punishes repeats hard */
 const KEEPER = {
@@ -1490,6 +1492,8 @@ class UI {
     this.restartBtn = document.getElementById("restart-btn");
     this.dashboardBtn = document.getElementById("dashboard-btn");
     this.videoBreakEl = document.getElementById("video-break");
+    this.videoBreakTitleEl = document.getElementById("video-break-title");
+    this.videoFrameEl = this.videoBreakEl.querySelector(".video-frame");
     this.rewardVideoEl = document.getElementById("reward-video");
     this.videoCountdownEl = document.getElementById("video-countdown");
     this.continueBtn = document.getElementById("continue-btn");
@@ -1636,37 +1640,64 @@ class UI {
     this.uiOverlayEl.classList.remove("hidden");
   }
 
-  showVideoBreak() {
+  _prepareReplayGate() {
     this.confettiLayer.innerHTML = "";
     this.resultsPanelEl.classList.add("hidden");
     this.videoBreakEl.classList.remove("hidden");
     this.continueBtn.classList.add("hidden");
     this.continueBtn.disabled = false;
     this.rewardVideoEl.src = "";
-
-    window.open(PLAY_AGAIN_FORM_URL, "_blank", "noopener,noreferrer");
-
-    let secondsLeft = FORM_UNLOCK_SECONDS;
-    const updateCountdown = () => {
-      this.videoCountdownEl.innerHTML =
-        `Please fill the form. Play Again unlocks in <strong>${secondsLeft}</strong>s`;
-    };
-
-    updateCountdown();
-
     clearInterval(this.videoTimer);
+  }
+
+  _startReplayTimer(updateCountdown, doneText) {
+    let secondsLeft = FORM_UNLOCK_SECONDS;
+
+    updateCountdown(secondsLeft);
+
     this.videoTimer = setInterval(() => {
       secondsLeft--;
       if (secondsLeft <= 0) {
         clearInterval(this.videoTimer);
         this.videoTimer = null;
-        this.videoCountdownEl.textContent = "Thank you. You can play again with the same score.";
+        this.videoCountdownEl.textContent = doneText;
         this.continueBtn.classList.remove("hidden");
         this.continueBtn.focus();
         return;
       }
-      updateCountdown();
+      updateCountdown(secondsLeft);
     }, 1000);
+  }
+
+  showFormBreak() {
+    this._prepareReplayGate();
+    this.videoBreakTitleEl.textContent = "Please fill the form";
+    this.videoFrameEl.classList.add("hidden");
+
+    window.open(PLAY_AGAIN_FORM_URL, "_blank", "noopener,noreferrer");
+
+    this._startReplayTimer(
+      (secondsLeft) => {
+        this.videoCountdownEl.innerHTML =
+          `Please fill the form. Play Again unlocks in <strong>${secondsLeft}</strong>s`;
+      },
+      "Thank you. You can play again with the same score."
+    );
+  }
+
+  showVideoBreak() {
+    this._prepareReplayGate();
+    this.videoBreakTitleEl.textContent = "Watch to keep playing";
+    this.videoFrameEl.classList.remove("hidden");
+    this.rewardVideoEl.src = REWARD_VIDEO_URL;
+
+    this._startReplayTimer(
+      (secondsLeft) => {
+        this.videoCountdownEl.innerHTML =
+          `Play Again unlocks in <strong>${secondsLeft}</strong>s`;
+      },
+      "You can play again with the same score."
+    );
   }
 
   hideVideoBreak() {
@@ -1995,11 +2026,11 @@ class Game {
 
   _startVideoBreak() {
     if (this.videoCount === 0) {
-      this.ui.showVideoBreak();
+      this.ui.showFormBreak();
       return;
     }
 
-    this.continueGame(true);
+    this.ui.showVideoBreak();
   }
 
   continueGame(force = false) {
