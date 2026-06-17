@@ -11,13 +11,12 @@ const TOTAL_SHOTS = 5;
 const SHOT_DURATION_MS = 680;
 const RESULT_PAUSE_MS = 1200;
 const COUNTDOWN_START = 3;
-const VIDEO_UNLOCK_SECONDS = 15;
+const FORM_UNLOCK_SECONDS = 15;
 const SCORE_API_URL =
   "https://script.google.com/macros/s/AKfycbx_zT625-dxctB9R8VjGCch0_Z3dBQBjF14i0_K7PIptV3LKKTMIQ0JTGSIJL6FWwnfpg/exec";
 const DASHBOARD_URL =
   "https://marketingcampaign.online/Elastic/FIFA_Assessment_Landing_Page/V4/#gameSection";
-const REWARD_VIDEO_URL =
-  "https://play.vidyard.com/wiV2167hapKXXRxXrqvYci.html?autoplay=1&embed_button=0&viral_sharing=0";
+const PLAY_AGAIN_FORM_URL = "https://events.elastic.co/aroundtheworld";
 
 /** Medium difficulty — reads aim well, punishes repeats hard */
 const KEEPER = {
@@ -75,47 +74,52 @@ const POINTS = {
 const WIN_CARDS = [
   {
     id: "striker",
-    minScore: 100,
+    minScore: 700,
     rating: 100,
     role: "Engineering Leader",
     position: "Striker",
     tagline: "The driver of results",
+    image: "cards/Fifa cards_Leader copy.jpg",
     roleTop: true,
   },
   {
     id: "playmaker",
-    minScore: 95,
+    minScore: 595,
     rating: 95,
     role: "SRE Leader",
     position: "Playmaker",
     tagline: "Full of observability of the field",
+    image: "cards/Fifa cards_SRE Leader copy.jpg",
     roleTop: false,
   },
   {
     id: "goalkeeper",
-    minScore: 90,
+    minScore: 490,
     rating: 90,
     role: "CTO/CEO",
     position: "Goalkeeper",
     tagline: "Sees the field before others do",
+    image: "cards/Fifa cards_CTO-CEO copy.jpg",
     roleTop: true,
   },
   {
     id: "defender",
-    minScore: 85,
+    minScore: 385,
     rating: 85,
     role: "CISO & Security Leader",
     position: "Defender",
     tagline: "Keeps the organization secure from threats",
+    image: "cards/Fifa cards_CISO Security Leader copy.jpg",
     roleTop: false,
   },
   {
     id: "midfielder",
-    minScore: 80,
+    minScore: 280,
     rating: 80,
     role: "Developer",
     position: "Midfielder",
     tagline: "The creator, builder and distributor",
+    image: "cards/Fifa cards_Developer copy.jpg",
     roleTop: true,
   },
 ];
@@ -128,8 +132,8 @@ function getWinCard(score) {
 }
 
 function getMedalTier(score) {
-  if (score >= 80) return "gold";
-  if (score >= 50) return "silver";
+  if (score >= 700) return "gold";
+  if (score >= 385) return "silver";
   return "bronze";
 }
 
@@ -1588,80 +1592,24 @@ class UI {
     }, 4500);
   }
 
-  _createFutCard(card, state, size = "mini") {
-    const el = document.createElement("article");
-    el.className = `fut-card fut-card--${size} fut-card--${card.roleTop ? "banner-top" : "banner-bottom"}`;
-    el.dataset.cardId = card.id;
-    el.dataset.state = state;
-
-    const bg = document.createElement("div");
-    bg.className = "fut-card-bg";
-    bg.setAttribute("aria-hidden", "true");
-
-    const burst = document.createElement("div");
-    burst.className = "fut-card-burst";
-    burst.setAttribute("aria-hidden", "true");
-
-    const silhouette = document.createElement("div");
-    silhouette.className = `fut-silhouette fut-silhouette--${card.id}`;
-    silhouette.setAttribute("aria-hidden", "true");
-
-    const ball = document.createElement("div");
-    ball.className = "fut-ball";
-    ball.setAttribute("aria-hidden", "true");
-
-    if (card.roleTop) {
-      const banner = document.createElement("div");
-      banner.className = "fut-banner fut-banner--top";
-      banner.textContent = card.role;
-      el.appendChild(banner);
-    }
-
-    const rating = document.createElement("div");
-    rating.className = "fut-rating";
-    rating.textContent = String(card.rating);
-
-    const position = document.createElement("div");
-    position.className = "fut-position";
-    position.textContent = card.position;
-
-    const tagline = document.createElement("p");
-    tagline.className = "fut-tagline";
-    tagline.textContent = card.tagline;
-
-    el.append(bg, burst, silhouette, ball);
-
-    if (card.roleTop) {
-      el.append(rating, position, tagline);
-    } else {
-      el.append(rating, position);
-      const banner = document.createElement("div");
-      banner.className = "fut-banner fut-banner--bottom";
-      banner.textContent = card.role;
-      el.append(banner, tagline);
-    }
-
-    const label = document.createElement("span");
-    label.className = "visually-hidden";
-    label.textContent = `${card.position}, ${card.role}, ${card.rating} rating`;
-    el.append(label);
-
-    return el;
-  }
-
   _showRewardCard(score) {
     const unlocked = getWinCard(score);
     this.featuredCardSlotEl.innerHTML = "";
 
     if (unlocked) {
-      const featured = this._createFutCard(unlocked, "current", "featured");
+      const featured = document.createElement("img");
+      featured.className = "reward-card-image";
+      featured.src = unlocked.image;
+      featured.alt = `${unlocked.role} card`;
+      featured.loading = "eager";
       this.featuredCardSlotEl.appendChild(featured);
       return;
     }
 
     const placeholder = document.createElement("p");
     placeholder.className = "featured-empty";
-    placeholder.textContent = "Score 80+ to unlock your player card";
+    placeholder.textContent =
+      "Score 280 or more to reveal your player card";
     this.featuredCardSlotEl.appendChild(placeholder);
   }
 
@@ -1676,7 +1624,7 @@ class UI {
     this.finalScoreEl.textContent = String(score);
     this._showRewardCard(score);
 
-    if (score >= 80) {
+    if (score >= 280) {
       setTimeout(() => this._launchConfetti(), 400);
     }
   }
@@ -1694,15 +1642,17 @@ class UI {
     this.videoBreakEl.classList.remove("hidden");
     this.continueBtn.classList.add("hidden");
     this.continueBtn.disabled = false;
+    this.rewardVideoEl.src = "";
 
-    let secondsLeft = VIDEO_UNLOCK_SECONDS;
+    window.open(PLAY_AGAIN_FORM_URL, "_blank", "noopener,noreferrer");
+
+    let secondsLeft = FORM_UNLOCK_SECONDS;
     const updateCountdown = () => {
       this.videoCountdownEl.innerHTML =
-        `Play Now unlocks in <strong>${secondsLeft}</strong>s`;
+        `Please fill the form. Play Again unlocks in <strong>${secondsLeft}</strong>s`;
     };
 
     updateCountdown();
-    this.rewardVideoEl.src = REWARD_VIDEO_URL;
 
     clearInterval(this.videoTimer);
     this.videoTimer = setInterval(() => {
@@ -1710,7 +1660,7 @@ class UI {
       if (secondsLeft <= 0) {
         clearInterval(this.videoTimer);
         this.videoTimer = null;
-        this.videoCountdownEl.textContent = "You can continue with the same score.";
+        this.videoCountdownEl.textContent = "Thank you. You can play again with the same score.";
         this.continueBtn.classList.remove("hidden");
         this.continueBtn.focus();
         return;
@@ -2044,11 +1994,16 @@ class Game {
   }
 
   _startVideoBreak() {
-    this.ui.showVideoBreak();
+    if (this.videoCount === 0) {
+      this.ui.showVideoBreak();
+      return;
+    }
+
+    this.continueGame(true);
   }
 
-  continueGame() {
-    if (this.ui.continueBtn.disabled) return;
+  continueGame(force = false) {
+    if (!force && this.ui.continueBtn.disabled) return;
     this.ui.continueBtn.disabled = true;
     this.videoCount++;
     this.audio._ensureContext();

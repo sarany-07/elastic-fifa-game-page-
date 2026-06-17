@@ -562,6 +562,10 @@ body.is-mobile #game-canvas {
   border-radius: 12px;
 }
 
+.video-frame.hidden {
+  display: none;
+}
+
 .video-frame iframe {
   position: absolute;
   inset: 0;
@@ -748,6 +752,16 @@ body.is-mobile #game-canvas {
   display: flex;
   justify-content: center;
   min-height: 0;
+}
+
+.reward-card-image {
+  display: block;
+  width: min(100%, 200px);
+  height: auto;
+  border-radius: 12px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(0, 85, 255, 0.25);
 }
 
 .featured-empty {
