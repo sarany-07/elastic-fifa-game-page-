@@ -72,41 +72,23 @@ const POINTS = {
   MISS: 0,
 };
 
-/** Player cards unlocked by final score (highest matching tier wins) */
+/** Player cards unlocked by final score */
 const WIN_CARDS = [
   {
-    id: "striker",
-    minScore: 700,
-    rating: 100,
-    role: "Engineering Leader",
-    position: "Striker",
-    tagline: "The driver of results",
-    image: "cards/Fifa cards_Leader copy.jpg",
-    roleTop: true,
-  },
-  {
-    id: "playmaker",
-    minScore: 595,
-    rating: 95,
-    role: "SRE Leader",
-    position: "Playmaker",
-    tagline: "Full of observability of the field",
-    image: "cards/Fifa cards_SRE Leader copy.jpg",
-    roleTop: false,
-  },
-  {
-    id: "goalkeeper",
-    minScore: 490,
-    rating: 90,
-    role: "CTO/CEO",
-    position: "Goalkeeper",
-    tagline: "Sees the field before others do",
-    image: "cards/Fifa cards_CTO-CEO copy.jpg",
+    id: "midfielder",
+    minScore: 280,
+    maxScore: 385,
+    rating: 80,
+    role: "Developer",
+    position: "Midfielder",
+    tagline: "The creator, builder and distributor",
+    image: "cards/Fifa cards_Developer copy.jpg",
     roleTop: true,
   },
   {
     id: "defender",
     minScore: 385,
+    maxScore: 490,
     rating: 85,
     role: "CISO & Security Leader",
     position: "Defender",
@@ -115,20 +97,43 @@ const WIN_CARDS = [
     roleTop: false,
   },
   {
-    id: "midfielder",
-    minScore: 280,
-    rating: 80,
-    role: "Developer",
-    position: "Midfielder",
-    tagline: "The creator, builder and distributor",
-    image: "cards/Fifa cards_Developer copy.jpg",
+    id: "goalkeeper",
+    minScore: 490,
+    maxScore: 595,
+    rating: 90,
+    role: "CTO/CEO",
+    position: "Goalkeeper",
+    tagline: "Sees the field before others do",
+    image: "cards/Fifa cards_CTO-CEO copy.jpg",
+    roleTop: true,
+  },
+  {
+    id: "playmaker",
+    minScore: 595,
+    maxScore: 700,
+    rating: 95,
+    role: "SRE Leader",
+    position: "Playmaker",
+    tagline: "Full of observability of the field",
+    image: "cards/Fifa cards_SRE Leader copy.jpg",
+    roleTop: false,
+  },
+  {
+    id: "striker",
+    minScore: 700,
+    maxScore: Infinity,
+    rating: 100,
+    role: "Engineering Leader",
+    position: "Striker",
+    tagline: "The driver of results",
+    image: "cards/Fifa cards_Leader copy.jpg",
     roleTop: true,
   },
 ];
 
 function getWinCard(score) {
   for (const card of WIN_CARDS) {
-    if (score >= card.minScore) return card;
+    if (score >= card.minScore && score < card.maxScore) return card;
   }
   return null;
 }
