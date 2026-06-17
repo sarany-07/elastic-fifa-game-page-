@@ -19,7 +19,93 @@ const DASHBOARD_URL =
   "https://marketingcampaign.online/Elastic/FIFA_Assessment_Landing_Page/V4/#gameSection";
 const PLAY_AGAIN_FORM_URL = "https://events.elastic.co/aroundtheworld";
 const REWARD_VIDEO_URL =
-  "https://play.vidyard.com/wiV2167hapKXXRxXrqvYci.html?autoplay=1&embed_button=0&viral_sharing=0";
+  "https://play.vidyard.com/wiV2167hapKXXRxXrqvYci.html?autoplay=1&muted=0&embed_button=0&viral_sharing=0";
+// Goal celebration starts after this delay once the shot is confirmed as a goal.
+// Keep this at 0 for immediate playback, or raise it if you want a small pause.
+const GOAL_CELEBRATION_DELAY_MS = 0;
+// Skips quiet lead-in inside assets/applause-goal.mp3 so the sound feels instant.
+// Lower this if the applause starts too abruptly; raise it if you still hear lag.
+const GOAL_CELEBRATION_AUDIO_OFFSET_SECONDS = 1.15;
+// Fade-out time when reward video starts, so game claps do not overlap video audio.
+// Set this to 0 for an instant cut, or raise it for a smoother fade.
+const VIDEO_START_AUDIO_STOP_FADE_MS = 0;
+
+// Generic/personal email domains that should not be accepted for company email.
+// Add/remove domains here later if your campaign rules change.
+const BLOCKED_EMAIL_DOMAINS = new Set([
+  "gmail.com",
+  "gamil.com",
+  "googlemail.com",
+  "yahoo.com",
+  "yahoo.co.in",
+  "ymail.com",
+  "rocketmail.com",
+  "hotmail.com",
+  "outlook.com",
+  "live.com",
+  "msn.com",
+  "icloud.com",
+  "me.com",
+  "mac.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com",
+  "zoho.com",
+  "mail.com",
+  "gmx.com",
+  "gmx.net",
+  "rediffmail.com",
+  "yandex.com",
+  "fastmail.com",
+]);
+
+// Blocks country variants such as yahoo.co.uk or hotmail.in.
+// Keep company-owned domains out of this list; it is only for consumer mail brands.
+const BLOCKED_EMAIL_DOMAIN_PREFIXES = [
+  "gmail.",
+  "gamil.",
+  "googlemail.",
+  "yahoo.",
+  "ymail.",
+  "rocketmail.",
+  "hotmail.",
+  "outlook.",
+  "live.",
+  "msn.",
+  "icloud.",
+  "aol.",
+  "proton.",
+  "protonmail.",
+  "yandex.",
+  "gmx.",
+  "rediffmail.",
+];
+
+function getCompanyEmailError(email) {
+  const value = String(email || "").trim().toLowerCase();
+  const parts = value.split("@");
+
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return "Enter a valid work email address.";
+  }
+
+  const domain = parts[1];
+  const domainParts = domain.split(".");
+  const tld = domainParts[domainParts.length - 1];
+
+  if (domainParts.length < 2 || domainParts.some((part) => !part) || tld.length < 2) {
+    return "Enter a valid work email address.";
+  }
+
+  if (
+    BLOCKED_EMAIL_DOMAINS.has(domain) ||
+    BLOCKED_EMAIL_DOMAIN_PREFIXES.some((prefix) => domain.startsWith(prefix))
+  ) {
+    return "Please enter your work email address.";
+  }
+
+  return "";
+}
 
 /** Medium difficulty — reads aim well, punishes repeats hard */
 const KEEPER = {
@@ -192,6 +278,7 @@ class AudioManager {
     this.masterVol = 0.3;
     this._masterGain = null;
     this._loadPromise = null;
+    this._activeSources = new Set();
   }
 
   _out(ctx) {
@@ -241,7 +328,7 @@ class AudioManager {
     }
   }
 
-  _playBuffer(key, gainValue) {
+  _playBuffer(key, gainValue, startOffsetSeconds = 0, delayMs = 0) {
     if (!this.enabled || !this.unlocked || !this.ready) return;
     const ctx = this._ensureContext();
     const buffer = this.buffers[key];
@@ -252,10 +339,35 @@ class AudioManager {
     gain.gain.value = gainValue;
     source.connect(gain);
     gain.connect(this._out(ctx));
-    source.start(0);
+    const active = { source, gain };
+    this._activeSources.add(active);
+    source.onended = () => {
+      this._activeSources.delete(active);
+      source.onended = null;
+    };
+    const offset = Math.max(0, Math.min(startOffsetSeconds, buffer.duration - 0.05));
+    source.start(ctx.currentTime + Math.max(0, delayMs) / 1000, offset);
   }
 
   /** No looping background — applause only on goals */
+  stopCelebrationAudio(fadeMs = 0) {
+    const ctx = this._ensureContext();
+    if (!ctx || this._activeSources.size === 0) return;
+
+    for (const active of [...this._activeSources]) {
+      try {
+        const stopAt = ctx.currentTime + Math.max(0, fadeMs) / 1000;
+        active.gain.gain.cancelScheduledValues(ctx.currentTime);
+        active.gain.gain.setValueAtTime(active.gain.gain.value, ctx.currentTime);
+        active.gain.gain.linearRampToValueAtTime(0, stopAt);
+        active.source.stop(stopAt);
+      } catch {
+        // Source may already be stopped; remove it from the active list.
+        this._activeSources.delete(active);
+      }
+    }
+  }
+
   startCrowdAmbience() {}
   stopCrowdAmbience() {}
 
@@ -265,7 +377,12 @@ class AudioManager {
 
   playGoal() {
     if (!this.enabled) return;
-    this._playBuffer("applauseGoal", 0.42);
+    this._playBuffer(
+      "applauseGoal",
+      0.42,
+      GOAL_CELEBRATION_AUDIO_OFFSET_SECONDS,
+      GOAL_CELEBRATION_DELAY_MS
+    );
   }
 
   playMiss() {}
@@ -1619,7 +1736,7 @@ class UI {
     const placeholder = document.createElement("p");
     placeholder.className = "featured-empty";
     placeholder.textContent =
-      "Score 280 or more to reveal your player card";
+      "You’re still on the bench! Hit 280+ to claim your player card. Or, Not quite match-ready! Hit 280+ to reveal your player card.";
     this.featuredCardSlotEl.appendChild(placeholder);
   }
 
@@ -1753,6 +1870,7 @@ class Game {
     this.signupModal = document.getElementById("signup-modal");
     this.signupForm = document.getElementById("signup-form");
     this.playerNameInput = document.getElementById("player-name");
+    this.playerEmailInput = document.getElementById("player-email");
     this.signupButton = this.signupForm.querySelector(".signup-submit");
     this.signupButtonAnimation = document.getElementById("signup-button-animation");
 
@@ -1798,6 +1916,8 @@ class Game {
     this.ui.restartBtn.addEventListener("click", () => this._startVideoBreak());
     this.ui.dashboardBtn.addEventListener("click", () => this.viewDashboard());
     this.ui.continueBtn.addEventListener("click", () => this.continueGame());
+    this.playerEmailInput.addEventListener("input", () => this._validateCompanyEmail());
+    this.playerEmailInput.addEventListener("blur", () => this._validateCompanyEmail());
     this.signupForm.addEventListener("submit", (event) => this._submitSignup(event));
     this._bindCrowdAudio();
     this._bindScrollLock();
@@ -1823,8 +1943,15 @@ class Game {
     });
   }
 
+  _validateCompanyEmail() {
+    const error = getCompanyEmailError(this.playerEmailInput.value);
+    this.playerEmailInput.setCustomValidity(error);
+    return !error;
+  }
+
   _submitSignup(event) {
     event.preventDefault();
+    this._validateCompanyEmail();
     if (!this.signupForm.reportValidity()) return;
 
     const formData = new FormData(this.signupForm);
@@ -2051,6 +2178,7 @@ class Game {
       return;
     }
 
+    this.audio.stopCelebrationAudio(VIDEO_START_AUDIO_STOP_FADE_MS);
     this.ui.showVideoBreak();
   }
 

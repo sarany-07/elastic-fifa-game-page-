@@ -526,7 +526,28 @@ body.is-mobile #game-canvas {
   margin-top: 0.15rem;
 }
 
+.results-modal--compact .btn.hidden {
+  display: none;
+}
+
 .results-modal.hidden {
+  display: none;
+}
+
+.play-limit-message {
+  width: 100%;
+  margin: 0;
+  padding: 0.75rem 0.8rem;
+  color: #ffd54f;
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.35;
+  background: rgba(255, 213, 79, 0.08);
+  border: 1px solid rgba(255, 213, 79, 0.28);
+  border-radius: 10px;
+}
+
+.play-limit-message.hidden {
   display: none;
 }
 
@@ -767,11 +788,12 @@ body.is-mobile #game-canvas {
 .featured-empty {
   margin: 0;
   padding: 0.75rem 1rem;
-  font-size: 0.82rem;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.55);
   background: rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   border: 1px dashed rgba(255, 255, 255, 0.15);
+  line-height: 1.5rem;
 }
 
 .section-title {
