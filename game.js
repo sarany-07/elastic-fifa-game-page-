@@ -82,7 +82,7 @@ const WIN_CARDS = [
     role: "Developer",
     position: "Midfielder",
     tagline: "The creator, builder and distributor",
-    image: "cards/Fifa cards_Developer copy.jpg",
+    image: "cards/developer.jpg",
     roleTop: true,
   },
   {
@@ -93,7 +93,7 @@ const WIN_CARDS = [
     role: "CISO & Security Leader",
     position: "Defender",
     tagline: "Keeps the organization secure from threats",
-    image: "cards/Fifa cards_CISO Security Leader copy.jpg",
+    image: "cards/security.jpg",
     roleTop: false,
   },
   {
@@ -104,7 +104,7 @@ const WIN_CARDS = [
     role: "CTO/CEO",
     position: "Goalkeeper",
     tagline: "Sees the field before others do",
-    image: "cards/Fifa cards_CTO-CEO copy.jpg",
+    image: "cards/CTO_CEO.jpg",
     roleTop: true,
   },
   {
@@ -115,7 +115,7 @@ const WIN_CARDS = [
     role: "SRE Leader",
     position: "Playmaker",
     tagline: "Full of observability of the field",
-    image: "cards/Fifa cards_SRE Leader copy.jpg",
+    image: "cards/SRE.jpg",
     roleTop: false,
   },
   {
@@ -126,7 +126,7 @@ const WIN_CARDS = [
     role: "Engineering Leader",
     position: "Striker",
     tagline: "The driver of results",
-    image: "cards/Fifa cards_Leader copy.jpg",
+    image: "cards/Engineering.jpg",
     roleTop: true,
   },
 ];
