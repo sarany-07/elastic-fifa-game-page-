@@ -24,7 +24,15 @@
 
         <label class="signup-field">
           <span>Company email</span>
-          <input id="player-email" name="email" type="email" autocomplete="email" required>
+          <input
+            id="player-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            pattern="^[^@\s]+@[^@\s]+\.[^@\s]{2,}$"
+            title="Enter your work email"
+            required
+          >
         </label>
 
         <label class="signup-field">
@@ -98,7 +106,8 @@
         <div class="video-frame hidden">
           <iframe
             id="reward-video"
-            title="Play again form"
+            title="Play again reward video"
+            allow="autoplay; fullscreen"
             allowfullscreen
           ></iframe>
         </div>
@@ -115,6 +124,6 @@
   </div>
 
   <script src="assets/lottie.min.js" defer></script>
-  <script src="game.js?v=34" defer></script>
+  <script src="game.js?v=36" defer></script>
 </body>
 </html>
